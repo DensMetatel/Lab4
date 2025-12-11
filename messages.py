@@ -9,12 +9,12 @@ HELP_MESSAGE = (
     "Список команд:\n"
     "/start - приветствие\n"
     "/help - список команд\n"
-    "/song <название> - поиск треков"
+    "/song <название> - поиск треков\n"
     "/artist <имя> - поиск артиста"
 )
 
-NO_NAME_SONG_MESSAGE = "Укажите название песни после команды /song"
+SONG_MESSAGE = "Введите название песни:"
 NO_SONGS_MESSAGE = "Песни не найдены"
-NO_NAME_ARTIST_MESSAGE = "Укажите имя исполнителя после команды /artist"
+ARTIST_MESSAGE = "Введите имя исполнителя:"
 NO_ARTISTS_MESSAGE = "Исполнители не найдены"
 API_ERROR_MESSAGE = "Ошибка при обращении к DEEZER"
