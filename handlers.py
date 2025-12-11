@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.filters import Command
-from deezer import search_song
-from messages import START_MESSAGE, HELP_MESSAGE, NO_QUERY_MESSAGE, NO_SONGS_MESSAGE, API_ERROR_MESSAGE
+from deezer import search_song, search_artist
+from messages import START_MESSAGE, HELP_MESSAGE, NO_NAME_SONG_MESSAGE, NO_SONGS_MESSAGE, NO_NAME_ARTIST_MESSAGE, NO_ARTISTS_MESSAGE, API_ERROR_MESSAGE
 from bot import dp
 
 @dp.message(Command("start"))
@@ -16,7 +16,7 @@ async def help_command(message: types.Message):
 async def song_command(message: types.Message):
     query = message.text.replace("/song", "").strip()
     if not query:
-        await message.answer(NO_QUERY_MESSAGE)
+        await message.answer(NO_NAME_SONG_MESSAGE)
         return
 
     results = await search_song(query)
@@ -40,5 +40,36 @@ async def song_command(message: types.Message):
 
         if cover:
             await message.answer_photo(photo=cover, caption=caption)
+        else:
+            await message.answer(caption)
+
+
+@dp.message(Command("artist"))
+async def artist_command(message: types.Message):
+    query = message.text.replace("/artist", "").strip()
+
+    if not query:
+        await message.answer(NO_NAME_ARTIST_MESSAGE)
+        return
+
+    results = await search_artist(query)
+    if results is None:
+        await message.answer(API_ERROR_MESSAGE)
+        return
+
+    if not results:
+        await message.answer(NO_ARTISTS_MESSAGE)
+        return
+
+    for artist in results:
+        name = artist.get("name")
+        fans = artist.get("nb_fan", 0)
+        link = artist.get("link")
+        picture = artist.get("picture_medium")
+
+        caption = f"{name}\nФанатов - {fans}\nСсылка - {link}"
+
+        if picture:
+            await message.answer_photo(photo=picture, caption=caption)
         else:
             await message.answer(caption)
