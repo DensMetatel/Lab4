@@ -35,6 +35,13 @@ async def artist_wait(message: types.Message):
     await message.answer(ARTIST_MESSAGE)
 
 
+@dp.message(Command("info"))
+async def info_wait(message: types.Message):
+    user_id = message.from_user.id
+    last_command[user_id] = "info"
+    await message.answer(INFO_MESSAGE)
+
+
 @dp.message()
 async def text_handler(message: types.Message):
     user_id = message.from_user.id
@@ -51,6 +58,9 @@ async def text_handler(message: types.Message):
         await process_artist(message)
         last_command[user_id] = None
 
+    elif state == "info":
+        await process_info(message)
+        last_command[user_id] = None
 
 async def process_song(message: types.Message):
     user_id = message.from_user.id
@@ -138,3 +148,45 @@ async def process_artist(message: types.Message):
     else:
         await message.answer(caption)
 
+async def process_info(message: types.Message):
+    query = message.text.strip()
+
+    results = await search_song(query, limit=20)
+
+    if not results:
+        await message.answer(NO_INFO_MESSAGE)
+        return
+
+    query_lower = query.lower()
+
+    filtered = [
+        track for track in results
+        if query_lower in (track.get("artist", {}).get("name", "").lower() + " " + track.get("title", "").lower())
+    ]
+
+    track = filtered[0] if filtered else results[0]
+
+    title = track.get("title")
+    artist = track.get("artist", {}).get("name")
+    album = track.get("album", {}).get("title")
+    cover = track.get("album", {}).get("cover_big")
+    duration = track.get("duration")
+    link = track.get("link")
+    rank = track.get("rank")
+
+    minutes = duration // 60
+    seconds = duration % 60
+
+    caption = (
+        f"<b>{title}</b>\n"
+        f"Исполнитель - {artist}\n"
+        f"Альбом - {album}\n"
+        f"Длительность - {minutes}:{seconds:02d}\n"
+        f"Рейтинг Deezer - {rank}\n"
+        f"{link}"
+    )
+
+    if cover:
+        await message.answer_photo(photo=cover, caption=caption, parse_mode="HTML")
+    else:
+        await message.answer(caption, parse_mode="HTML")
