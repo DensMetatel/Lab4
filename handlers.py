@@ -48,6 +48,7 @@ async def text_handler(message: types.Message):
     state = last_command.get(user_id)
 
     if not state:
+        await message.answer(INPUT_MESSAGE)
         return
 
     if state == "song":
@@ -120,6 +121,18 @@ async def send_next_songs(message: types.Message):
 async def more_songs_callback(callback: types.CallbackQuery):
     await callback.answer()
     await send_next_songs(callback.message)
+
+
+@dp.errors()
+async def errors_handler(update, exception):
+    try:
+        if hasattr(update, "message") and update.message:
+            await update.message.answer(ERROR_MESSAGE)
+        elif hasattr(update, "callback_query") and update.callback_query:
+            await update.callback_query.message.answer(ERROR_MESSAGE)
+    except Exception:
+        pass
+    return True
 
 
 async def process_artist(message: types.Message):
